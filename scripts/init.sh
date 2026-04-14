@@ -60,35 +60,25 @@ echo "Creating argocd namespace..."
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 echo "Installing ArgoCD from official manifests..."
-# Use Helm for more robust installation that handles CRD properly
-if ! command -v helm &> /dev/null; then
-  # Fallback: Apply with validation disabled to work around annotation size issue
-  kubectl apply -k "$REPO_DIR/argocd/install" --validate=false 2>/dev/null || \
-  kubectl apply -k "$REPO_DIR/argocd/install" --validate=false || true
-else
-  # Use Helm if available (more reliable)
-  helm repo add argocd https://argoproj.github.io/argo-helm > /dev/null 2>&1 || true
-  helm repo update > /dev/null 2>&1 || true
-  helm upgrade --install argocd argocd/argo-cd \
-    --namespace argocd \
-    --values - << EOF > /dev/null 2>&1
-redis:
-  enabled: true
-server:
-  service:
-    type: ClusterIP
-dexServer:
-  enabled: true
-repoServer:
-  enabled: true
-applicationController:
-  enabled: true
-EOF
-  if [ $? -ne 0 ]; then
-    # Helm install failed, fall back to kubectl
-    kubectl apply -k "$REPO_DIR/argocd/install" --validate=false || true
-  fi
+# Download ArgoCD manifests
+ARGOCD_MANIFEST=$(mktemp)
+curl -sL https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml -o "$ARGOCD_MANIFEST"
+
+# Temporarily disable exit on error for this step
+set +e
+
+# Apply with server-side if available (handles large annotations better)
+kubectl apply -f "$ARGOCD_MANIFEST" -n argocd --server-side 2>/dev/null
+
+# If that didn't work, try regular apply (will create most resources despite CRD error)
+if [ $? -ne 0 ]; then
+  kubectl apply -f "$ARGOCD_MANIFEST" -n argocd 2>/dev/null || true
 fi
+
+# Re-enable exit on error
+set -e
+
+rm -f "$ARGOCD_MANIFEST"
 
 echo "Waiting for ArgoCD to be ready..."
 kubectl rollout status deployment/argocd-server -n argocd --timeout=300s > /dev/null 2>&1 || true
