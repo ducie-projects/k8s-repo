@@ -2,6 +2,15 @@
 
 A local Kubernetes cluster setup using Kind with organized project structure.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Setup Scripts](#setup-scripts)
+- [ArgoCD](#argocd)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+- [Ports Reference](#ports-reference)
+
 ## Structure
 
 ```
@@ -75,3 +84,35 @@ Then visit: `https://localhost:8080`
 - **Nodes**: 1 control-plane + 2 workers
 - **Kubeconfig**: `./cluster/kubeconfig`
 - **GitOps Tool**: ArgoCD
+
+## Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** — Get started in minutes
+- **[PORTS.md](PORTS.md)** — Complete ports reference and networking guide
+- **[argocd/README.md](argocd/README.md)** — ArgoCD configuration details
+- **[argocd/applications/README.md](argocd/applications/README.md)** — Application definitions
+
+## Ports Reference
+
+### Quick Port Summary
+
+| Service | Local Port | Remote Port | Namespace | URL |
+|---------|-----------|------------|-----------|-----|
+| ArgoCD UI | 8080 | 443 | argocd | https://localhost:8080 |
+| Web App | 8081 | 80 | production | http://localhost:8081 |
+| API Service | 3000 | 3000 | production | http://localhost:3000 |
+
+### Common Port-Forward Commands
+
+```bash
+# ArgoCD Web UI
+kubectl port-forward -n argocd svc/argocd-server 8080:443
+
+# Web App
+kubectl port-forward -n production svc/web-app 8081:80
+
+# API Service
+kubectl port-forward -n production svc/api-service 3000:3000
+```
+
+**For complete port reference and networking details, see [PORTS.md](PORTS.md)**
