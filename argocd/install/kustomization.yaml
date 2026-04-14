@@ -7,12 +7,12 @@ resources:
   - namespace.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# Customize ArgoCD installation if needed
-# patches:
-#   - target:
-#       kind: Deployment
-#       name: argocd-server
-#     patch: |-
-#       - op: add
-#         path: /spec/template/spec/serviceAccountName
-#         value: argocd-server
+# Fix CRD annotations size limit issue
+patches:
+  - target:
+      kind: CustomResourceDefinition
+    patch: |-
+      - op: replace
+        path: /metadata/annotations
+        value:
+          controller-gen.kubebuilder.io/version: v0.11.1
