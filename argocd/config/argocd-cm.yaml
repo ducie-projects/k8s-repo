@@ -7,9 +7,49 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
-  # Add repository credentials if needed
+  # Repositories configuration
   repositories: |
-  # Example:
-  # - type: git
-  #   url: https://github.com/ducie-projects/k8s-repo
-  # Customize other ArgoCD settings as needed
+    - type: git
+      url: https://github.com/ducie-projects/k8s-repo
+      name: k8s-repo
+  
+  # Repository credentials template for private repositories
+  repository.credentials: |
+    - url: https://github.com/ducie-projects
+      passwordSecret:
+        name: github-repo-creds
+        key: password
+      usernameSecret:
+        name: github-repo-creds
+        key: username
+
+  # URL/UI configuration
+  url: https://argocd.example.com
+  
+  # Enable insecure mode (development only)
+  insecure: "false"
+  
+  # Session timeout
+  session.default.duration: 24h
+  
+  # Server configuration
+  server.disable.auth: "false"
+  server.insecure: "true"
+
+  # Webhook configuration
+  webhook.github.secret: argocd
+  
+  # Application defaults
+  application.defaults: |
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: false
+      syncOptions:
+      - CreateNamespace=true
+
+  # Cluster settings
+  timeout.reconciliation: 180s
+
+  # RBAC scopes (optional)
+  rbac.scopes: '[groups]'

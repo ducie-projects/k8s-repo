@@ -1,0 +1,32 @@
+# API Service Values
+app:
+  name: api-service
+  namespace: production
+
+image:
+  repository: myregistry/api-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicas: 3
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "500m"
+  limits:
+    memory: "256Mi"
+    cpu: "1000m"
+
+env:
+  - name: ENV
+    value: production
+  - name: LOG_LEVEL
+    value: info
+  - name: PORT
+    value: "3000"

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-accounts-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-accounts-config
+data:
+  # Account definitions
+  accounts: |
+    # Admin account (default: admin)
+    # Change password with: argocd account update-password
+    
+    # Developer account
+    developer:
+      enabled: true
+      # Capabilities: login
+      capabilities: [login]
+    
+    # CI/CD service account (for automation)
+    cicd:
+      enabled: true
+      capabilities: []
+
+  # Token configuration
+  # Tokens are created with: argocd account generate-token --account cicd
+  # And stored as secrets in argocd namespace
