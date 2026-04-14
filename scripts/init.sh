@@ -33,13 +33,25 @@ echo ""
 
 # Step 2: Create Kind Cluster
 echo -e "${YELLOW}[2/5] Creating Kind cluster...${NC}"
+export KUBECONFIG="$KUBECONFIG_PATH"
+
+# Check if cluster already exists and is accessible
+CLUSTER_EXISTS=false
 if [ -f "$KUBECONFIG_PATH" ]; then
-  echo -e "${BLUE}ℹ Kubeconfig already exists, skipping cluster creation${NC}"
-else
+  if kubectl cluster-info &> /dev/null; then
+    CLUSTER_EXISTS=true
+    echo -e "${BLUE}ℹ Cluster already exists and is accessible${NC}"
+  else
+    echo -e "${YELLOW}ℹ Kubeconfig exists but cluster is not accessible, recreating...${NC}"
+    rm "$KUBECONFIG_PATH"
+    CLUSTER_EXISTS=false
+  fi
+fi
+
+if [ "$CLUSTER_EXISTS" = false ]; then
   kind create cluster --config "$CLUSTER_CONFIG" --kubeconfig "$KUBECONFIG_PATH"
   echo -e "${GREEN}✓ Cluster created${NC}"
 fi
-export KUBECONFIG="$KUBECONFIG_PATH"
 echo ""
 
 # Step 3: Install ArgoCD
